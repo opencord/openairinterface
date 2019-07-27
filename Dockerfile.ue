@@ -13,52 +13,16 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-FROM ubuntu:16.04 AS base-builder
+ARG build_base
+
+FROM $build_base AS ue-builder
 RUN apt-get update && apt-get install -y \
-    sudo \
     linux-headers-`uname -r` \
-    vim-common \
-    git \
-    build-essential \
-    cmake \
  && rm -rf /var/lib/apt/lists/*
-RUN git clone https://gitlab.eurecom.fr/oai/openairinterface5g/ /openairinterface5g
+
 WORKDIR /openairinterface5g
 ENV USER=root
-RUN git checkout -f v1.0.0 && \
-    /bin/bash -c "source oaienv" && \
-    cd cmake_targets && \
-    ./build_oai -I
-
-FROM base-builder AS enb-builder
-WORKDIR /openairinterface5g
-ENV USER=root
-RUN /bin/bash -c "source oaienv" && \
-    cd cmake_targets && \
-    ./build_oai --eNB -t ETHERNET -c
-
-FROM ubuntu:16.04 AS lte-softmodem
-RUN apt-get update && apt-get install -y \
-    libssl1.0.0 \
-    libnettle6 \
-    libsctp1 \
-    libforms2 \
-    libprotobuf-c1 \
-    libyaml-0-2 \
-    libconfig9 \
-    dnsutils \
-    iproute2 \
-    iputils-ping \
- && rm -rf /var/lib/apt/lists/*
-WORKDIR /openairinterface5g/cmake_targets
-COPY --from=enb-builder /openairinterface5g/cmake_targets/ .
-
-FROM base-builder AS ue-builder
-WORKDIR /openairinterface5g
-ENV USER=root
-RUN /bin/bash -c "source oaienv" && \
-    cd cmake_targets && \
-    ./build_oai --UE -t ETHERNET -c
+RUN /bin/bash -c "source oaienv" && cd cmake_targets && ./build_oai --UE -t ETHERNET -c
 
 FROM ubuntu:16.04 AS lte-uesoftmodem
 RUN apt-get update && apt-get install -y \
@@ -75,8 +39,24 @@ RUN apt-get update && apt-get install -y \
     iputils-ping \
     net-tools \
  && rm -rf /var/lib/apt/lists/*
+
 WORKDIR /openairinterface5g/cmake_targets
 COPY --from=ue-builder /openairinterface5g/cmake_targets .
 COPY --from=ue-builder /openairinterface5g/targets/bin/nvram .
 COPY --from=ue-builder /openairinterface5g/targets/bin/usim .
 COPY --from=ue-builder /openairinterface5g/targets ../targets
+
+# Label image
+ARG org_label_schema_version=unknown
+ARG org_label_schema_vcs_url=unknown
+ARG org_label_schema_vcs_ref=unknown
+ARG org_label_schema_build_date=unknown
+ARG org_opencord_vcs_commit_date=unknown
+
+LABEL org.label-schema.schema-version=1.0 \
+      org.label-schema.name=lte-uesoftmodem \
+      org.label-schema.version=$org_label_schema_version \
+      org.label-schema.vcs-url=$org_label_schema_vcs_url \
+      org.label-schema.vcs-ref=$org_label_schema_vcs_ref \
+      org.label-schema.build-date=$org_label_schema_build_date \
+      org.opencord.vcs-commit-date=$org_opencord_vcs_commit_date
