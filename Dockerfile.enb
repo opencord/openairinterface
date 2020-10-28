@@ -20,7 +20,7 @@ WORKDIR /openairinterface5g
 ENV USER=root
 RUN /bin/bash -c "source oaienv" && cd cmake_targets && ./build_oai --eNB -t ETHERNET -c
 
-FROM ubuntu:16.04 AS lte-softmodem
+FROM ubuntu:18.04 AS lte-softmodem
 RUN apt-get update && apt-get install -y \
     libssl1.0.0 \
     libnettle6 \

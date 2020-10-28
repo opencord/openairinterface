@@ -24,7 +24,7 @@ WORKDIR /openairinterface5g
 ENV USER=root
 RUN /bin/bash -c "source oaienv" && cd cmake_targets && ./build_oai --UE -t ETHERNET -c
 
-FROM ubuntu:16.04 AS lte-uesoftmodem
+FROM ubuntu:18.04 AS lte-uesoftmodem
 RUN apt-get update && apt-get install -y \
     libssl1.0.0 \
     libnettle6 \
@@ -33,6 +33,7 @@ RUN apt-get update && apt-get install -y \
     libconfig9 \
     libblas3 \
     liblapacke \
+    libatlas3-base \
     sudo \
     dnsutils \
     iproute2 \

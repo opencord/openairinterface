@@ -20,7 +20,7 @@ UE_NAME                  ?= lte-uesoftmodem
 ENB_NAME                 ?= lte-softmodem
 
 # Tag is fixed to OAI release version, v1.0.0, regardless of VERSION file
-DOCKER_TAG               ?= 1.0.0
+DOCKER_TAG               ?= 1.1.0
 DOCKER_REGISTRY          ?=
 DOCKER_REPOSITORY        ?=
 DOCKER_BUILD_ARGS        ?=
